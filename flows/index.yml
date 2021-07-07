@@ -1,0 +1,28 @@
+!Flow
+version: '1'
+with:
+  restful: True
+pods:
+  - name: segmenter
+    show_exc_info: true
+    uses: pods/segmenter.yml
+    read_only: true
+  - name: encoder
+    show_exc_info: true
+    uses: pods/encoder.yml
+    polling: any
+    shards: 2
+    timeout_ready: 6000000
+    read_only: true
+  - name: chunk_idx
+    polling: any
+    show_exc_info: true
+    uses: pods/chunk.yml
+    shards: 2
+  - name: doc_idx
+    polling: any
+    uses: pods/doc.yml
+    needs: gateway
+  - name: join_all
+    uses: _merge
+    needs: [doc_idx, chunk_idx]

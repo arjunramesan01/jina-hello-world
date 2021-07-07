@@ -1,0 +1,74 @@
+!BinaryPbIndexer
+with:
+  index_filename: doc.gzip
+metas:
+  name: doc_indexer  # a customized name
+  workspace: './workspace'
+requests:
+  on:
+    ControlRequest:
+      - !ControlReqDriver {}
+    SearchRequest:
+      - !KVSearchDriver
+        with:
+          traversal_paths: ['m']
+      - !SortQL
+        with:
+          traversal_paths: ['m']
+          field: 'score__value'
+          reverse: True
+      - !SliceQL
+        with:
+          traversal_paths: ['m']
+          start: 0
+          end: 10
+    IndexRequest:
+      - !ExcludeQL
+        with:
+          fields:
+            - chunks  # we don't want to save nested structure
+            - buffer
+      - !KVIndexDriver
+        with:
+          traversal_paths: ['r']
+
+
+# !CompoundIndexer
+# components:
+#   - !FaissIndexer
+#     with:
+#       index_key: 'IVF10,PQ4'
+#       distance: 'l2'
+#       normalize: 'False'
+#       nprobe: '1'
+#       train_filepath: './workspace/train.tgz'
+#       index_filename: 'index.gz'
+#       ref_indexer:
+#         !NumpyIndexer
+#         metas:
+#           workspace: './workspace'
+#           name: wrapidx
+#         with:
+#           index_filename: 'index.gz'
+#     metas:
+#       name: faissidx
+#   - !BinaryPbIndexer
+#     with:
+#       index_filename: doc.gz
+#     metas:
+#       name: docidx
+# metas:
+#   name: indexer
+#   workspace: './workspace'
+# requests:
+#   on:
+#     SearchRequest:
+#       - !VectorSearchDriver
+#         with:
+#           executor: faissidx
+#       - !KVSearchDriver
+#         with:
+#           executor: docidx
+#           traversal_paths: ['m']
+#     ControlRequest:
+#       - !ControlReqDriver {}

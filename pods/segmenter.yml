@@ -1,0 +1,8 @@
+# !Sentencizer
+# with:
+#   min_sent_len: 6
+
+!SpacySentencizer
+with:
+  lang: "en_core_web_sm"
+  use_default_segmenter: true

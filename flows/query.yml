@@ -1,0 +1,30 @@
+!Flow
+version: '1'
+with:
+  read_only: true  # better add this in the query time
+  rest_api: true
+  port_expose: 65469
+  restful: True
+pods:
+  - name: chunk_seg
+    show_exc_info: true
+    uses: pods/segmenter.yml
+    parallel: 2
+  - name: tf_encode
+    show_exc_info: true
+    uses: pods/encoder.yml
+    parallel: 2
+    timeout_ready: 6000000
+  - name: chunk_idx
+    show_exc_info: true
+    uses: pods/chunk.yml
+    shards: 2
+    polling: all
+    uses_after: pods/chunk_merger.yml
+    timeout_ready: -1 # larger timeout as in query time will read all the data
+  - name: ranker
+    show_exc_info: true
+    uses: pods/ranker.yml
+  - name: doc_idx
+    show_exc_info: true
+    uses: pods/doc.yml
